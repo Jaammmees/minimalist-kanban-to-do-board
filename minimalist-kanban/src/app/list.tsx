@@ -1,7 +1,7 @@
 import React from 'react';
 import Task from './task';
 import { useDrop } from 'react-dnd';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 interface Task {
     id: string;
@@ -20,22 +20,32 @@ const List: React.FC<ListProps> = ({title, tasks, onTaskDrop}) => {
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const [, drop] = useDrop({
+    const[isHovered, setIsHovered] = useState(false);
+
+    const [{isOver}, drop] = useDrop({
         accept: "TASK",
-        drop: (item : Task) => onTaskDrop(item, title)
+        drop: (item : Task) => onTaskDrop(item, title),
+        collect: (monitor) => ({
+          isOver: monitor.isOver(),  
+        }),
     })    
+
+    React.useEffect(() => {
+        setIsHovered(isOver); // Update hover state when isOver changes
+      }, [isOver]);
 
     drop(ref);
 
     return (
-        <div ref={ref} className='flex-1 kanban-list w-full p-4 hover:scale-110 transition-all duration-300 '>
+        <div ref={ref} className={`flex-1 kanban-list w-full p-2 hover:scale-105 transition-all duration-300  ${
+            isHovered ? "scale-110" : "bg-white"
+          }`}>
             <h2 className='text-[clamp(1.5rem,5vw,4rem)] font-sf-pro-bold  text-center'>{title}</h2>
             <hr/>
-            <div className='kanban-container p-2 mt-2  '>
+            <div className='kanban-container pt-1 mt-2  '>
                     {tasks.map((task) => (
                         <div 
                             key = {task.id} 
-                            className='kanban-task border p-2 mt-2 rounded-xl hover:shadow-lg transition-all duration-300'
                         >
                             <Task {...task}></Task>
                         </div>
